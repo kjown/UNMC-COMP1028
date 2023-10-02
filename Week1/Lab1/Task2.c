@@ -3,10 +3,10 @@
 int main() {
     float a, b;
     
-    printf("First float: ");
+    printf("Float a: ");
     scanf("%f", &a);
 
-    printf("Second float: ");
+    printf("Float b: ");
     scanf("%f", &b);
 
     float x;
