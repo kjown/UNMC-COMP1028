@@ -1,23 +1,23 @@
 #include <stdio.h> // Include the standard i/o library 
 
 int main() {
-    int num; // Declare an integer variable 'num' to store each entered integer value.
-    int count; // Declare an integer variable 'count' to store the number of values to compare.
+    int number; // Declare variable number to store int inputted by user
+    int count; // Variable count to store the number of input required by user
     printf("How many integer values do you want to compare:"); // Prompt the user to input the number of integer values they want to compare.
-    scanf("%d", &count); // Read and store the number of values entered by the user.
+    scanf("%d", &count); // Read the count value inputted by user
 
-    int min; // Declare an integer variable 'min' to store the minimum value.
-    // Iterate through the loop to compare the entered integer values.
+    int minimum; // Declare an integer variable 'min' to store the minimum value.
+    // Iterate through the loop while i <= count
     for (int i = 1; i <= count; i++) {
-        printf("Enter the %d value ", i); // Prompt the user to enter an integer
-        scanf("%d", &num); // Read and store the integer value inputted by the user.
+        printf("Enter the %d value ", i); // Prompt user for an integer
+        scanf("%d", &number); // Read integer value inputted by the user.
         
         // Compare the current value 'num' with the current minimum value 'min'.
         // If 'num' is smaller than 'min', update 'min' to be 'num'.
-        if (num < min) {
-            min = num;
+        if (number < minimum) {
+            minimum = number;
         }
     }
-    printf("The smallest value is: %d\n", min); // Display the smallest value
-    return 0; // Return 0 to indicate successful program execution.
+    printf("The smallest value is: %d\n", minimum); // Output the minimum value
+    return 0; // Program will execute successfully and did what it was intended to do
 }

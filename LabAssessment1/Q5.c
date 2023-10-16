@@ -1,10 +1,9 @@
 #include <stdio.h> // Include the standard input/output library function
 
 int main() {
-    // Initialize a variable 'i' to 2, and the loop continues as long as 'i' is less than or equal to 20000.
-    // In each iteration, 'i' is multiplied by 2, effectively doubling its value each time.
+    // initialize i to be 2, and if i < 20000, print i, then i * 2
     for (int i = 2; i <= 20000; i *= 2) {
-        printf("%d\n", i); // Print the current value of 'i' followed by a newline.
+        printf("%d\n", i); // Print i value 
     }
-    return 0; // Return 0 to indicate successful program execution.
+    return 0; // Program will execute successfully and did what it was intended to do
 }

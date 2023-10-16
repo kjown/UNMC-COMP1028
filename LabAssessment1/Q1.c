@@ -20,7 +20,8 @@ int main() {
 
     }
     int divisor = count; // Set divisor to be equal to count
-    if (divisor = 5) { // if divisor is 5, execute
+    // if divisor is 5, execute
+    if (divisor = 5) { 
         avg = sum / divisor; // the average (avg) is equal to sum / divisor
         quotient = sum / divisor; // quotient is the result of dividing one quantity by antother (sum / divisor) 
         remainder = sum - (quotient * divisor); // if there is remainder, it is the remaining part or leftover value after performing the division
