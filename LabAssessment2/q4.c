@@ -7,6 +7,7 @@ void divide(int array[2][2]); // function prototype to perform division of two f
 int gcd(int x,int y); // function prototype to find the gcd tof the numerator and denominator
 
 int main() {
+    // numerator 1 is [0][0], denominator1 is [0][1], numerator2 is [1][0], denominator is [1][1]
     int array[2][2]; // initialise array to store the numerator and denominator of fractions
 
     printf("Enter the numerator and the denominator of fraction 1: "); // prompt user to enter first fraction

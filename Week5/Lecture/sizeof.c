@@ -13,5 +13,5 @@ int main() {
 }
 
 size_t getSize(const float *ptr) {
-    
+
 }
