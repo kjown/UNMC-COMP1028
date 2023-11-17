@@ -94,7 +94,7 @@ void studentLogin() { // require FILE knowledge
     printf("+====================================+\n");
     printf("\t>>> Student Login Page <<<\n");
     printf("+====================================+\n");
-    
+
     // requires ID as username
     printf("Student ID: ");
     scanf("%s", std.ID);
@@ -231,7 +231,20 @@ void searchBook() { // require FILE knowledge
         
     // ELSE, tell user book is not available to borrow
 
+}
 
+void borrowFunc() {
+    // copiesAvailable --
+
+    // update borrow_return_detals
+
+}
+
+void returnFunc() {
+    // copiesAvailable ++
+
+    // update borrow_return_detals
+    
 }
 
 // display title of books in library, in ascending alphabetical order
