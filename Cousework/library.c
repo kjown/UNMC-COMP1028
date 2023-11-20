@@ -23,15 +23,15 @@ void addBooks();
 
 // struct to store student details
 typedef struct student_details {
-    int ID;
+    char ID[9];
     char name[30];
-    char password[10];
+    char password[11];
 }Student;
 
 typedef struct librarian_details {
-    int ID;
+    char ID[9];
     char name[30];
-    char password[10];
+    char password[11];
 }Librarian;
 
 // struct to store book details
@@ -66,7 +66,7 @@ void get_userType(void) {
     printf("> 1. STUDENT\n");
     printf("> 2. LIBRARIAN\n");
     printf("> 3. NEW USER\n");
-    printf("> Enter number and hit ENTER: ");
+    printf("> Enter number and press ENTER: ");
     scanf("%d", &userType);
 
     switch (userType)
@@ -89,41 +89,59 @@ void get_userType(void) {
 
 void studentLogin() { // require FILE knowledge
     Student std;
+    FILE *fptr = fopen("Student.txt", "r");
+    char line[100];
+    Student *stdPtr = &std;
+
+    if ((fptr = fopen("Student.txt", "r")) == NULL) {
+        puts("File could not be opened");
+    }
 
     // User interface
     printf("+====================================+\n");
-    printf("\t>>> Student Login Page <<<\n");
+    printf("\t>>> Student Login Page <<<          \n");
     printf("+====================================+\n");
 
     // requires ID as username
     printf("Student ID: ");
     scanf("%s", std.ID);
 
-    Student *stdPtr = &std;
 
     // if username does not match those in files, prompt again  
-    while (1) {
-        if (std.ID != ) { // compare with names in student details file
-            printf("User does not exist. Please enter again.");
-            printf("Name: ");
-            scanf("%d", std.ID);
-        }
-        else {
-            break;
+    while (fgets(line, sizeof(line), fptr) != NULL) {
+        char ID[9];
+        while (1) {
+            if (sscanf(line, "%s", ID) == 1) {
+                if (ID != std.ID) {
+                    printf("User does not exist. Please enter again.\n");
+                    printf("Student ID: ");
+                    scanf("%s", std.ID);
+                }
+            }
+            else {
+                break;
+            }
         }
     }
+
     // ask for password 
     printf("Password: ");
     scanf("%s", std.password);
-    // if password wrong, prompt again
-    while (1) {
-        if (std.password != ) {
-            printf("Password incorrect. Please enter again.");
-            printf("Password: ");
-            scanf("%s", std.password);
-        }
-        else {
-            break;
+
+    // if password does not match those in files, prompt again
+    while (fgets(line, sizeof(line), fptr) != NULL) {
+        char password[11];
+        while (1) {
+            if (sscanf(line, "%s", password) == 1) {
+                if (password != std.password) {
+                    printf("Password is incorrect. Please enter again.");
+                    printf("Password: ");
+                    scanf("%s", std.password);
+                }
+                else {
+                    break;
+                }
+            }
         }
     }
     studentMenu();
@@ -131,38 +149,53 @@ void studentLogin() { // require FILE knowledge
 
 void librarianLogin() { // require FILE knowledge
     Librarian lib;
+    FILE *fptr = fopen("Librarian.txt", "r");
+    char line[100];
+    Librarian *libPtr = &lib;
+
+    if ((fptr = fopen("Librarian.txt", "r")) == NULL) {
+        puts("File could not be opened");
+    }
     
     // User interface
     printf("+====================================+\n");
-    printf("\t>>> Staff Login Page <<<\n");
+    printf("\t>>> Staff Login Page <<<            \n");
     printf("+====================================+\n");
 
     // requires ID as username
     printf("Staff ID: ");
-    scanf("%d", lib.ID);
+    scanf("%s", lib.ID);
     // if username does not match those in files, prompt again
-    while (1) {
-        if (lib.name != ) {
-            printf("User does not exist. Please enter again.");
-            printf("Staff ID: ");
-            scanf("%d", lib.ID);
+    while (fgets(line, sizeof(line), fptr) != NULL) {
+        char ID[9];
+        while (1) {
+            if (sscanf(line, "%s", ID) == 1) {
+                if (ID != lib.ID) {
+                    printf("User does not exist. Please enter again.\n");
+                    printf("Staff ID: ");
+                    scanf("%s", lib.ID);
+                }
+                else {
+                    break;
+                }
+            }
         }
-        else {
-            break;
-        }
-    }
-    // prompt for password
-    printf("Password: ");
-    scanf("%d", lib.password);
-    // if password wrong, prompt again
-    while (1) {
-        if (lib.password != ) {
-            printf("Incorrect password. Please enter again.");
-            printf("Password: ");
-            scanf("%d", lib.password);
-        }
-        else {
-            break;
+    // ask user for password
+        printf("Password: ");
+        scanf("%s", lib.password);
+    // if password does not match those in files, prompt again
+        char password[11];
+        while (1) {
+            if (sscanf(line, "%s", password) == 1) {
+                if (password != lib.password) {
+                    printf("Password is incorrect. Please enter again.\n");
+                    printf("Password: ");
+                    scanf("%s", lib.password);
+                }
+                else {
+                    break;
+                }
+            }
         }
     }
     librarianMenu();
@@ -183,7 +216,7 @@ void studentMenu() {
     printf("> 3. Display list of books");
     printf("> 4. Calculate penalty for late return");
     printf("> 5. Previous Page");
-    printf("Enter the number and press ENTER: ");
+    printf("> Enter the number and press ENTER: ");
     scanf("%d", &num);
 
     switch (num)
@@ -249,7 +282,19 @@ void returnFunc() {
 
 // display title of books in library, in ascending alphabetical order
 void displayList() { // require FILE knowledge
+    // open Books.txt file for reading
+    FILE *fptr = fopen("Books.txt", "r");
 
+    char line[200];
+
+    while(fgets(line, sizeof(line), fptr) != NULL) {
+        printf("%s", line);
+    }
+    puts("");
+
+    fclose(fptr);
+
+    return 0;
 }
 
 void penalty() { 
@@ -260,7 +305,7 @@ void librarianMenu() {
     int num;
     
     printf("+====================================+\n");
-    printf(">>> Librarian Menu <<<");
+    printf(">>> Librarian Menu <<<                \n");
     printf("+====================================+\n");
     printf("> 1. Book Query and Borrow");
     printf("> 2. Return Book");
@@ -270,7 +315,7 @@ void librarianMenu() {
     printf("> 6. Borrow and Return Details");
     printf("> 7. Generate monthly report");
     printf("> 8. Previous Page");
-    printf("Enter the number and press ENTER: ");
+    printf("> Enter the number and press ENTER: ");
     scanf("%d", &num);
 
     switch (num)

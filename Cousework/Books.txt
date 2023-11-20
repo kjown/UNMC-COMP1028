@@ -1,0 +1,2 @@
+ISBN    TITLE   COPIESAVAILABLE     TOTALCOPIES
+12      hyu     6                   10
