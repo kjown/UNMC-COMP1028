@@ -26,7 +26,7 @@ void borrow_return_details();
 void monthlyReport();
 void addBooks();
 
-void exit();
+void end();
 
 // struct to store student details
 typedef struct student_details {
@@ -50,6 +50,21 @@ typedef struct book {
     int copiesAvailable;
 
 }Book;
+
+typedef struct borrow_details {
+    char ID[9]; // studentID
+    char ISBN[14]; // ISBN has 13 digits and 4 dashes
+    char currentDate[11]; // currentDate of program
+    char toBeReturnDate[11]; // returnDate 
+} Borrow;
+
+typedef struct return_details {
+    char ID[9];
+    char ISBN[14];
+    char toBeReturnDate[11];
+    char returnDate[11];
+    float penalty;
+} Return;
 
 int main() {
     mainMenu();
@@ -90,7 +105,7 @@ void get_userType(void) {
         addStudent();
         break;
     case 4:
-        exit();
+        end();
         break;
     default:
         printf("Invalid input");
@@ -205,7 +220,7 @@ void studentMenu() {
 
     printf("+====================================+\n");
     printf("\t>>> Student Menu <<<");
-    printf("+====================================+\n");
+    printf("\n+====================================+\n");
     printf("> 1. Book Query and Borrow\n");
     printf("> 2. Return Book\n");
     printf("> 3. Display list of books\n");
@@ -233,7 +248,7 @@ void studentMenu() {
         mainMenu();
         break;
     case 6:
-        exit();
+        end();
         break;
     default:
         printf("Invalid input.");
@@ -245,7 +260,7 @@ void studentMenu() {
 // query on book using ISBN
 void searchBook() { // require FILE knowledge
     char inputISBN[14];
-    char ans;
+    int ans;
     int found = 0;
 
     FILE *bPtr = NULL;
@@ -256,7 +271,7 @@ void searchBook() { // require FILE knowledge
     else {
         Book book;
         
-        printf("+====================================+\n");
+        printf("\n+====================================+\n");
         printf("\t>>> Book Search <<<\n");
         printf("+====================================+\n");
         
@@ -273,7 +288,8 @@ void searchBook() { // require FILE knowledge
                 printf("Copies Available: %d\n", book.copiesAvailable);
                 if (book.copiesAvailable > 0) {
                     printf("\n> Would you like to borrow this book?\n> 1. Yes\n> 2. No\n");
-                    scanf("%c", &ans);
+                    printf("Enter the number and press Enter: ");
+                    scanf("%d", &ans);
                     switch (ans)
                     {
                     case 1:
@@ -290,26 +306,26 @@ void searchBook() { // require FILE knowledge
                 }
                 else {
                     puts("Book is not available.");
-                    studentMenu();
+                    searchBook();
                 }
                 fclose(bPtr);
             }
         }
-        if (found != 0) {
+        if (found == 0) {
             printf("Book not found.\n");
             searchBook();
         }
+        studentMenu();
     }
 }
 
 void borrowFunc(char *ptr) {
+    Borrow borrow;
     Student std;
     Book book;
     FILE *borrowPtr = NULL;
     FILE *bookPtr = NULL;
     FILE *tempPtr = NULL;
-    char currentDate[11];
-    char returnDate[11];
 
     // Set date to 25/11/2023
     struct tm tm = {0};
@@ -317,11 +333,11 @@ void borrowFunc(char *ptr) {
     tm.tm_mon = 10;     // month is November
     tm.tm_mday = 25;    // Day
 
-    strftime(currentDate, 11, "%Y-%m-%d", &tm);
+    strftime(borrow.currentDate, 11, "%Y-%m-%d", &tm);
     
     // set the return date of books (5 days later)
     tm.tm_mday += 5;
-    strftime(returnDate, 11, "%Y-%m-%d", &tm);
+    strftime(borrow.toBeReturnDate, 11, "%Y-%m-%d", &tm);
 
     // update the Books.txt file
     if (((bookPtr) = fopen("Books.txt", "r+")) == NULL) {
@@ -355,23 +371,119 @@ void borrowFunc(char *ptr) {
     }
 
     // update Borrow.txt file
-    printf("+====================================+\n");
+    printf("\n+====================================+\n");
     printf("\t>>> Borrow Page <<<          \n");
     printf("+====================================+\n");
     printf("> Please enter ID: ");
     scanf("%s", std.ID);
 
-    fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, ptr, currentDate, returnDate);
+    fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, ptr, borrow.currentDate, borrow.toBeReturnDate);
     fclose(borrowPtr);
 
-    puts("Book borrowed successfully.");
+    printf("You have borrowed:\n%s\n", book.title);
+    printf("\nPlease return book by %s.\nFailing to do so will result in a penalty of RM1.00 per late day.\n\n", borrow.toBeReturnDate);
 }
 
 void returnFunc() {
-    // copiesAvailable ++
+    Student std;
+    Book book;
+    Borrow borrow;
+    Return r;
+    FILE *returnPtr = NULL;
+    FILE *bookPtr = NULL;
+    FILE *borrowPtr = NULL;
+    FILE *tempPtr = NULL;
+    FILE *tempBorrowPtr = NULL;
+    char currentDate[11];
+    char returnDate[11];
 
-    // update borrow_return_detals
-    
+    // Set date to 25/11/2023
+    struct tm tm = {0};
+    tm.tm_year = 2023 - 1900;   // years since 1900
+    tm.tm_mon = 10;     // month is November
+    tm.tm_mday = 25;    // Day
+
+    strftime(r.returnDate, 11, "%Y-%m-%d", &tm);
+
+    // open Books.txt
+    if (((bookPtr) = fopen("Books.txt", "r+")) == NULL) {
+        puts("Error opening Books.txt.");
+    }
+
+    // open Borrow.txt file
+    if (((borrowPtr) = fopen("Borrow.txt", "r+")) == NULL) {
+        puts("Error opening Borrow.txt.");
+    }
+    // open Return.txt file
+    if (((returnPtr) = fopen("Return.txt", "r+")) == NULL) {
+        puts("Error opening Return.txt.");
+    }
+    printf("+====================================+\n");
+    printf("\t>>> Return Page <<<          \n");
+    printf("+====================================+\n");
+
+    // compare currentDate with returnDate
+    while (fscanf(borrowPtr, "%s\n%s\n%s\n%s\n", borrow.ID, book.ISBN, borrow.currentDate, borrow.toBeReturnDate) == 4) {
+        // if StudentID in Borrow.txt, continue; else, print message
+        int penalise = 0;
+        if (std.ID == borrow.ID) {
+            if (strcmp(r.returnDate, borrow.toBeReturnDate) > 0) {
+                // if currentDate > returnDate, print message for LATE RETURN, call penalty()
+                printf("Late Return.\n");
+                penalise = 1;
+                puts("Call penalty()");
+                //penalty();
+            }
+            book.copiesAvailable++;
+            // in Books.txt, update copiesAvailable++
+            // place result into temporary file Temp.txt
+            fprintf(tempPtr, "%s\n%s\n%d\n%d\n\n", book.ISBN, book.title, book.totalCopies, book.copiesAvailable);
+        }
+        fclose(bookPtr);
+        fclose(tempPtr);
+
+        // Replace Books.txt with Temp.txt
+        if (remove("Books.txt") != 0) {
+            printf("Error deleting original file.\n");
+        }
+        if (rename("Temp.txt", "Books.txt") != 0) {
+            printf("Error renaming temporary file.\n");
+        }
+        // update Return.txt 
+        fprintf(returnPtr, "\n\n%s\n%s\n%s\n%s\n%.2f", r.ID, r.ISBN, r.toBeReturnDate, r.returnDate, r.penalty);
+        fclose(returnPtr);
+
+        printf("You have returned:\n%s\n", book.title);
+        if (penalise = 1) {
+            printf("Late Return\n");
+            printf("Please pay the penalty of RM%.2f", r.penalty);
+        }
+        // close Return.txt
+        fclose(returnPtr);
+    }
+
+    if (((tempBorrowPtr) = fopen("tempBorrow.txt", "w")) == NULL) {
+        puts("Error creating temporary Return.txt file.");
+    }
+
+    // remove borrow details in Borrow.txt 
+    while (fscanf(borrowPtr, "%s\n%s\n%s\n%s\n", borrow.ID, borrow.ISBN, borrow.currentDate, borrow.toBeReturnDate) == 4) {
+        if (strcmp(std.ID, borrow.ID) != 0) {
+            // if block does not match, put into temp Borrow.txt file
+            fprintf(tempBorrowPtr, "%s\n%s\n%s\n%s\n\n", borrow.ID, borrow.ISBN, borrow.currentDate, borrow.toBeReturnDate);
+        }
+    }
+    // close Borrow.txt file
+    fclose(borrowPtr);
+    fclose(tempBorrowPtr);
+
+    // Replace the original Borrow.txt file with the temporary file
+    if (remove("Books.txt") != 0) {
+        printf("Error deleting original file.\n");
+    }
+    if (rename("tempBorrow.txt", "Books.txt") != 0) {
+        printf("Error renaming temporary file.\n");
+    }
 }
 
 // function to compare the values of str of books to sort displayList in a alphabetical order
@@ -468,7 +580,7 @@ void librarianMenu() {
         mainMenu();
         break;
     case 9:
-        exit();
+        end();
         break;
     default:
         printf("Invalid input.");
@@ -494,10 +606,10 @@ void addBooks() { // require FILE knowledge
         scanf("%s", book.title);
 
         printf("Total Copies: ");
-        scanf("%d", book.totalCopies);
+        scanf("%d", &book.totalCopies);
 
         printf("Copies Available: ");
-        scanf("%d", book.totalCopies);
+        scanf("%d", &book.totalCopies);
 
         fprintf(bPtr, "\n\n%s\n%s\n%d\n%d", book.ISBN, book.title, book.totalCopies, book.copiesAvailable);
 
@@ -523,9 +635,10 @@ void monthlyReport() {
 
 }
 
-void exit() {
+void end() {
     printf("+====================================+\n");
     printf("\t>>> Session Ended <<<                \n");
     printf("\tThank you                 \n");
     printf("+====================================+\n");
 }
+

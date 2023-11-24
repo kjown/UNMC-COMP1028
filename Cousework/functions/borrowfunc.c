@@ -50,8 +50,6 @@ void borrowFunc(char *ptr) {
     FILE *borrowPtr = NULL;
     FILE *bookPtr = NULL;
     FILE *tempPtr = NULL;
-    char currentDate[11];
-    char returnDate[11];
 
     // Set date to 25/11/2023
     struct tm tm = {0};
@@ -59,11 +57,11 @@ void borrowFunc(char *ptr) {
     tm.tm_mon = 10;     // month is November
     tm.tm_mday = 25;    // Day
 
-    strftime(currentDate, 11, "%Y-%m-%d", &tm);
+    strftime(borrow.borrow_date, 11, "%Y-%m-%d", &tm);
     
     // set the return date of books (5 days later)
     tm.tm_mday += 5;
-    strftime(returnDate, 11, "%Y-%m-%d", &tm);
+    strftime(borrow.return_date, 11, "%Y-%m-%d", &tm);
 
     // update the Books.txt file
     if (((bookPtr) = fopen("Books.txt", "r+")) == NULL) {
@@ -103,8 +101,9 @@ void borrowFunc(char *ptr) {
     printf("> Please enter ID: ");
     scanf("%s", std.ID);
 
-    fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, ptr, currentDate, returnDate);
+    fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, ptr, borrow.borrow_date, borrow.return_date);
     fclose(borrowPtr);
 
-    puts("Book borrowed successfully.");
+    printf("You have borrowed:\n%s\n", book.title);
+    printf("Please return book by %s.\nFailing to do so will result in a penalty of RM1.00 per late day.\n\n", borrow.return_date);
 }
