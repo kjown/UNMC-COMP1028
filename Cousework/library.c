@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
 #define MAX_BOOKS 100
 
 // functions to mainMenu user and obtain login details
@@ -13,7 +15,7 @@ void addStudent();
 
 // function for users in studentMenu
 void searchBook();
-void borrowFunc();
+void borrowFunc(char *ptr);
 void returnFunc();
 void penalty();
 int compareBooks(const void *a, const void *b);
@@ -102,7 +104,7 @@ void studentLogin() { // require FILE knowledge
     FILE *sPtr = NULL;
 
     if ((sPtr = fopen("Student.txt", "r")) == NULL) {
-        printf("File could not be opened");
+        printf("File could not be opened.\n");
     }
     else {
         // User interface
@@ -142,7 +144,7 @@ void librarianLogin() { // require FILE knowledge
         puts("File could not be opened");
     }
     else {
-        Student lib;
+        Librarian lib;
         char inputID[9];
         char inputPassword[11];
         
@@ -270,19 +272,25 @@ void searchBook() { // require FILE knowledge
                 printf("Total Copies: %d\n", book.totalCopies);
                 printf("Copies Available: %d\n", book.copiesAvailable);
                 if (book.copiesAvailable > 0) {
-                    printf("\nWould you like to borrow this book?\n> 1. Yes\n> 2. No\n");
+                    printf("\n> Would you like to borrow this book?\n> 1. Yes\n> 2. No\n");
                     scanf("%c", &ans);
                     switch (ans)
                     {
                     case 1:
-                        printf("borrow\n");
+                        char *ptr = inputISBN;
+                        borrowFunc(ptr);
                         break;
                     case 2:
-                        printf("no\n");
+                        printf("Search done.\n");
+                        studentMenu();
                         break;
                     default:
-                        break;
+                        searchBook();
                     }
+                }
+                else {
+                    puts("Book is not available.");
+                    studentMenu();
                 }
                 fclose(bPtr);
             }
@@ -294,11 +302,69 @@ void searchBook() { // require FILE knowledge
     }
 }
 
-void borrowFunc() {
-    // copiesAvailable --
-    
-    // update borrow_return_details
+void borrowFunc(char *ptr) {
+    Student std;
+    Book book;
+    FILE *borrowPtr = NULL;
+    FILE *bookPtr = NULL;
+    FILE *tempPtr = NULL;
+    char currentDate[11];
+    char returnDate[11];
 
+    // Set date to 25/11/2023
+    struct tm tm = {0};
+    tm.tm_year = 2023 - 1900;   // years since 1900
+    tm.tm_mon = 10;     // month is November
+    tm.tm_mday = 25;    // Day
+
+    strftime(currentDate, 11, "%Y-%m-%d", &tm);
+    
+    // set the return date of books (5 days later)
+    tm.tm_mday += 5;
+    strftime(returnDate, 11, "%Y-%m-%d", &tm);
+
+    // update the Books.txt file
+    if (((bookPtr) = fopen("Books.txt", "r+")) == NULL) {
+        puts("File could not be opened.");
+    }
+    if (((tempPtr) = fopen("Temp.txt", "w")) == NULL) {
+        puts("Error creating temporary file.");
+        fclose(bookPtr);
+    }
+    if (((borrowPtr) = fopen("Borrow.txt", "a+")) == NULL) {
+        puts("Error opening Borrow.txt file.");
+        fclose(bookPtr);
+    }    
+
+    while (fscanf(bookPtr, "%s\n%[^\n]\n%d\n%d\n", book.ISBN, book.title, &book.totalCopies, &book.copiesAvailable) == 4) {
+        if (strcmp(ptr, book.ISBN) == 0) {
+            book.copiesAvailable --;
+        }
+        // place result into file
+        fprintf(tempPtr, "%s\n%s\n%d\n%d\n\n", book.ISBN, book.title, book.totalCopies, book.copiesAvailable);
+    }
+    fclose(bookPtr);
+    fclose(tempPtr);
+
+    // Replace the original file with the temporary file
+    if (remove("Books.txt") != 0) {
+        printf("Error deleting original file.\n");
+    }
+    if (rename("Temp.txt", "Books.txt") != 0) {
+        printf("Error renaming temporary file.\n");
+    }
+
+    // update Borrow.txt file
+    printf("+====================================+\n");
+    printf("\t>>> Borrow Page <<<          \n");
+    printf("+====================================+\n");
+    printf("> Please enter ID: ");
+    scanf("%s", std.ID);
+
+    fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, ptr, currentDate, returnDate);
+    fclose(borrowPtr);
+
+    puts("Book borrowed successfully.");
 }
 
 void returnFunc() {
@@ -308,6 +374,7 @@ void returnFunc() {
     
 }
 
+// function to compare the values of str of books to sort displayList in a alphabetical order
 int compareBooks(const void *a, const void *b) {
     return strcmp(((Book *)a)->title, ((Book *)b)->title);
 }
@@ -350,7 +417,6 @@ void displayList() { // require FILE knowledge
                books[i].totalCopies,
                books[i].copiesAvailable);
     }
-
 }
 
 void penalty() { 
@@ -400,6 +466,9 @@ void librarianMenu() {
         break;
     case 8: 
         mainMenu();
+        break;
+    case 9:
+        exit();
         break;
     default:
         printf("Invalid input.");
