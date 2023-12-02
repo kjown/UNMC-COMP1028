@@ -1,0 +1,16 @@
+For studentMenu
+- 1. Query for Availability function (Search)
+    - if copiesAvailable > 0, then available for borrow
+    - display title, author, ISBN, year of publication, no. of copies available, total copies
+    - ask User whether want to borrow
+    - if YES (1):  
+        - call borrowFunc: copiesAvailable --
+        - update borrow_return_details
+    -ELSE (2):
+        - studentMenu()
+        - 
+    - else, printf("Apologies. Book currently not available.")
+- 2. Return Books: call returnFunc(): copiesAvailable ++
+    - update borrow_return_details
+
+- 3. Exit to MainMenu: call mainMenu()
