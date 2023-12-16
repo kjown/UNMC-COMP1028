@@ -1,36 +1,31 @@
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <unistd.h>   
-#include <stdbool.h>
+#include <stdio.h>  // library for standard input output
+#include <string.h> // contains function for manipulating string
+#include <time.h>   // contains definitions of functions to get and manipulate date and time information
+#include <stdlib.h> // standard library of C that declares various utility functions for type conversions, memory allocations, algorithms and other similiar use cases
+#include <unistd.h>  // defines miscellaneous symbolic constants and types and declares miscellaneous functions
 
-#define MAX_BOOKS 100
+// function prototypes to mainMenu user and obtain login details
+void mainMenu(); // function to display the main menu of the Library Management System
+void get_userType(); // function to get the user type (Student or Librarian) from user
+void studentLogin(); // function to facilitate the student login
+void studentMenu(); // function to display the Student Menu
+void librarianLogin(); // function to facilitate Librarian login
+void librarianMenu(); // function to display librarian menu
+void addStudent(); // function to add new student details
 
-// functions to mainMenu user and obtain login details
-void mainMenu();
-void get_userType();
-int getCH();
-void studentLogin();
-void studentMenu();
-void librarianLogin();
-void librarianMenu();
-void addStudent();
-
-// function for users in studentMenu
-void searchBook();
-void borrowFunc();
-int isBookReturned(const char *inputID, const char *inputISBN);
-void returnFunc();
-void penalty();
-int compareBooks(const void *a, const void *b);
-void displayList();
+// function prototypes for users in studentMenu
+void searchBook();  // function for user to search for a book using ISBN
+void borrowFunc(); // function for user to borrow books
+int isBookReturned(const char *inputID, const char *inputISBN); // function used in returnFunc to check whether book have been returned
+void returnFunc(); // function to allow user to return a borrowed book
+void penalty(); // to calculate and display the penalty of student with late return
+int compareBooks(const void *a, const void *b); // function used in displaylist() to compare the value of books (to compare and sort in alphabetical order)
+void displayList(); // function to display all books in alphabetical order
 
 // functions for users in librarianMenu
-void borrow_return_details();
-void monthlyReport();
-void addBooks();
+void borrow_return_details(); //function to show borrow return details
+void monthlyReport(); // function to generate monthly report
+void addBooks(); // function to add books into the system
 
 void end();
 
@@ -59,6 +54,7 @@ typedef struct book {
 
 }Book;
 
+// struct to store borrow details
 typedef struct borrow_details {
     char ID[9]; // studentID
     char ISBN[14]; // ISBN has 13 digits and 4 dashes
@@ -66,6 +62,7 @@ typedef struct borrow_details {
     char toBeReturnDate[11]; // returnDate 
 } Borrow;
 
+// struct to store return details
 typedef struct return_details {
     char ID[9];
     char ISBN[14];
@@ -74,12 +71,14 @@ typedef struct return_details {
     float penalty;
 } Return;
 
+// main function
 int main() {
-    mainMenu();
+    mainMenu(); // call mainMenu() function
 
     return 0;
 }
 
+// main menu function
 void mainMenu() {
     printf("\n\n");
     printf("+====================================+\n");
@@ -93,7 +92,7 @@ void mainMenu() {
     
     get_userType();
 }
-
+// function to get the type of user (Student/Librarian/New User)
 void get_userType(void) {
     int userType;
         printf("+====================================+\n");
@@ -110,48 +109,48 @@ void get_userType(void) {
     switch (userType)
     {
     case 1:
-        studentLogin();
+        studentLogin(); // login as student
         break;
     case 2:
-        librarianLogin();
+        librarianLogin(); // login as librarian
         break;
     case 3:
-        addStudent();
+        addStudent(); // register new student
         break;
     case 4:
-        end();
+        end();  // exit the program
         break;
     default:
-        printf("Invalid input");
-        get_userType();
+        printf("Invalid input.\n "); // if invalid input, then display error message
+        get_userType(); // ask user for user type again
         break;
     }
-    getchar();
+    getchar(); // clear input buffer
 }
 
-void studentLogin() { // require FILE knowledge
-    Student std;
-    FILE *sPtr = NULL;
-
+void studentLogin() {
+    Student std; // struct std
+    FILE *sPtr = NULL; // initialise pointer for Student.txt file
+    // open Student.txt file
     if ((sPtr = fopen("Student.txt", "r")) == NULL) {
+        // if file does not exist, display error message
         printf("File could not be opened.\n");
     }
     else {
         // User interface
         printf("+====================================+\n");
-        printf("\t>>> Student Login Page <<<          \n");
+        printf("     >>> Student Login Page <<<          \n");
         printf("+====================================+\n");
-        Student std;
-        char inputID[9];
-        char inputPassword[11];
-        char ch;
+        char inputID[9]; // variable to store ID inputted by user
+        char inputPassword[11]; // variable to store password inputted by user
+        char ch; 
 
-        printf("Student ID: ");
-        scanf("%s", inputID);
+        printf("Student ID: "); // prompt user for student ID
+        scanf("%s", inputID); // read and store input student ID
         // clear input buffer
         getchar();
 
-        printf("Password: ");
+        printf("Password: "); // prompt user to input password
         scanf("%s", inputPassword);
 
         // Read through each line of the Student.txt file and compare with the user input
@@ -162,52 +161,55 @@ void studentLogin() { // require FILE knowledge
                 studentMenu();
             }
             else {
+                // if inputID and inputPassword does not match the data in Student.txt, display error message
                 printf("Invalid input. Please enter again.\n");
-                studentLogin();
+                studentLogin(); // go back to student login page to repeat the process until valid input
             }
         }
     }
 }
 
-void librarianLogin() { // require FILE knowledge
-    Librarian lib;
-    FILE *lPtr = fopen("Librarian.txt", "r");
-
+// function for librarian to login
+void librarianLogin() { 
+    Librarian lib; // librarian struct
+    FILE *lPtr; // Librarian.txt file pointer
+    // if file does not exist, display error message
     if ((lPtr = fopen("Librarian.txt", "r")) == NULL) {
         puts("File could not be opened");
     }
     else {
-        Librarian lib;
         char inputID[9];
         char inputPassword[11];
         
         // User interface
         printf("+====================================+\n");
-        printf("\t>>> Staff Login Page <<<            \n");
+        printf("       >>> Staff Login Page <<<            \n");
         printf("+====================================+\n");
-        
-        printf("Staff ID: ");
+        // prompt user for Staff ID
+        printf("Staff ID: ");   
         scanf("%s", inputID);
-
+        // prompt user for password
         printf("Password: ");
         scanf("%s", inputPassword);
 
         // Read through each line of the Student.txt file and compare with the user input
         while (fscanf(lPtr, "%8s\n%29[^\n]\n%10s\n", lib.ID, lib.name, lib.password) == 3) {
+            // if input ID and password match, then login is successful
             if (strcmp(inputID, lib.ID) == 0 && strcmp(inputPassword, lib.password) == 0) {
                 printf("Login successful.\n");
-                fclose(lPtr);
-                librarianMenu();
+                fclose(lPtr); // close Librarian.txt 
+                librarianMenu(); // proceed to librarian menu
             }
             else {
+                // if input is wrong, display error messsage and prompt for input again
                 printf("Invalid input. Please enter again.\n");
                 librarianLogin();
             }
         }
     }
 }
-
-void addStudent() { // require FILE knowledge
+// function to add student
+void addStudent() { 
     FILE *sPtr = NULL;       // sPtr = Student.txt file pointer
 
     // fopen opens file; exits program if file cannot be opened
@@ -216,26 +218,38 @@ void addStudent() { // require FILE knowledge
     }
     else {
         Student std;
+        // user interface
+        printf("\n+====================================+\n");
+        printf("       >>> Adding New User <<<            \n");
+        printf("+====================================+\n");
+
 
         printf("Enter Student ID: ");
         scanf("%s", std.ID);
+        getchar(); // clear input buffer
 
+        fflush(stdin); // clear output buffer
         printf("Enter Name: ");
-        scanf("%s", std.name);
-
+        fgets(std.name, 30, stdin);
+        size_t len = strlen(std.name);
+        if (len > 0 && std.name[len - 1] == '\n') {
+            std.name[len - 1] = '\0'; // Replace newline with null terminator
+        }
         printf("Enter Password: ");
-        scanf("%s", std.password);
-
+        fgets(std.password, 11, stdin);
+        // print the inputs into Student.txt
         fprintf(sPtr, "\n\n%s\n%s\n%s", std.ID, std.name, std.password);
 
-        fclose(sPtr);
+        fclose(sPtr); // close Student.txt
     }
-    get_userType();
+    printf("User added successfully.\n");
+    get_userType(); // go back to get type of user
 }   
 
+// function to display student menu
 void studentMenu() {
     int num;
-
+    // user interface
     printf("\n+====================================+\n");
     printf("\t>>> Student Menu <<<");
     printf("\n+====================================+\n");
@@ -268,26 +282,26 @@ void studentMenu() {
         end();
         break;
     default:
-        printf("Invalid input.");
-        studentMenu();
+        printf("Invalid input."); // display error message if input is invalid
+        studentMenu(); // go back to student menu
         break;
     }
 }
 
 // query on book using ISBN
-void searchBook() { // require FILE knowledge
-    char inputISBN[14];
-    int ans;
-    int found = 0;
+void searchBook() { 
+    char inputISBN[14]; // variable to store ISBN inputted by user
+    int ans; 
+    int found = 0; // variable to indicate whether book is found or not
 
-    FILE *bookPtr = NULL;
-
+    FILE *bookPtr = NULL; // file pointer for Book.txt
+    // open Book.txt
     if ((bookPtr = fopen("Books.txt", "r")) == NULL) {
         printf("File could not be opened.\n");
     }
     else {
         Book book;
-        
+        // user interface
         printf("\n+====================================+\n");
         printf("\t>>> Book Search <<<\n");
         printf("+====================================+\n");
@@ -299,7 +313,8 @@ void searchBook() { // require FILE knowledge
         while (fscanf(bookPtr, "%s\n%[^\n]\n%[^\n]\n%s\n%d\n%d\n", book.ISBN, book.title, book.author, book.year, &book.totalCopies, &book.copiesAvailable) == 6) {
             if (strcmp(inputISBN, book.ISBN) == 0) {
                 // Print the found book details
-                found = 1;
+                found = 1; // book is found
+                // display the details in table form
                 printf("| %-20s | %-60s | %-30s | %-20s | %-20s | %-20s |\n", "ISBN", "Title", "Author", "Year of Publication", "Total Copies", "Copies Available");
                 printf("| %-20s | %-60s | %-30s | %-20s | %-20d | %-20d |\n", book.ISBN, book.title, book.author, book.year, book.totalCopies, book.copiesAvailable);
 
@@ -311,19 +326,21 @@ void searchBook() { // require FILE knowledge
             }
         }
         if (found == 0) {
+            // display error mesage if book is not found
             printf("Book not found.\n");
-            searchBook();
+            searchBook(); // execute searchBook() again
         }
     }
 }
 
+// function for user to borrow book
 void borrowFunc() {
     Borrow borrow;
     Student std;
     Book book;
-    FILE *borrowPtr = NULL;
-    FILE *bookPtr = NULL;
-    FILE *tempPtr = NULL;
+    FILE *borrowPtr = NULL; // file pointer for Borrow.txt
+    FILE *bookPtr = NULL; // file pointer for Books.txt
+    FILE *tempPtr = NULL; // file pointer for Temporart file
 
     // Set date to 25/11/2023
     struct tm tm = {0};
@@ -337,7 +354,7 @@ void borrowFunc() {
     tm.tm_mday += 5;
     strftime(borrow.toBeReturnDate, 11, "%Y-%m-%d", &tm);
 
-    // update the Books.txt file
+    // open files
     if (((bookPtr) = fopen("Books.txt", "r+")) == NULL) {
         puts("File could not be opened.");
     }
@@ -351,6 +368,7 @@ void borrowFunc() {
     }    
 
     // update Borrow.txt file
+    // user interface
     printf("\n+====================================+\n");
     printf("\t>>> Borrow Page <<<          \n");
     printf("+====================================+\n");
@@ -359,19 +377,25 @@ void borrowFunc() {
     printf("> Please enter ISBN: ");
     scanf("%s", borrow.ISBN);
 
-
+    // check whether user Student ID exist and ISBN matches books in database
     while (fscanf(bookPtr, "%s\n%[^\n]\n%[^\n]\n%s\n%d\n%d\n", book.ISBN, book.title, book.author, book.year, &book.totalCopies, &book.copiesAvailable) == 6) {
         if (strcmp(borrow.ISBN, book.ISBN) == 0) {
-            book.copiesAvailable --;
-            fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, borrow.ISBN, borrow.currentDate, borrow.toBeReturnDate);
-            printf("You have borrowed:\n%s\n", book.title);
-            printf("\nPlease return book by %s.\nFailing to do so will result in a penalty of RM1.00 per late day.\n\n", borrow.toBeReturnDate);
+            if (book.copiesAvailable > 0) {
+                book.copiesAvailable --; // decrement copiesAvailable in Books.txt as book is borrowed
+                // append the details into Borrow.txt
+                fprintf(borrowPtr, "\n\n%s\n%s\n%s\n%s\n", std.ID, borrow.ISBN, borrow.currentDate, borrow.toBeReturnDate);
+                printf("You have borrowed:\n%s\n", book.title);
+                printf("\nPlease return book by %s.\nFailing to do so will result in a penalty of RM1.00 per late day.\n\n", borrow.toBeReturnDate);
+            }
+            else {
+                printf("Apologies. Book is not available to borrow.\n");
+            }
         }
         // place result into file
         fprintf(tempPtr, "%s\n%s\n%s\n%s\n%d\n%d\n\n", book.ISBN, book.title, book.author, book.year, book.totalCopies, book.copiesAvailable);
     }
-    fclose(bookPtr);
-    fclose(tempPtr);
+    fclose(bookPtr); // close Books.txt
+    fclose(tempPtr); // close temporary file
 
     // Replace the original file with the temporary file
     if (remove("Books.txt") != 0) {
@@ -381,9 +405,10 @@ void borrowFunc() {
         printf("Error renaming temporary file.\n");
     }
 
-    fclose(borrowPtr);
+    fclose(borrowPtr); // close Borrow.txt
 }
 
+// function to check whether books is returned
 int isBookReturned(const char *inputID, const char *inputISBN) {
     FILE *returnPtr = fopen("Return.txt", "r");
     Return r;
@@ -399,6 +424,7 @@ int isBookReturned(const char *inputID, const char *inputISBN) {
     return 0; // Book not yet returned
 }
 
+// function to return borrowed book
 void returnFunc() {
     FILE *borrowPtr = NULL;
     FILE *bookPtr = NULL;
@@ -467,7 +493,6 @@ void returnFunc() {
                 fprintf(tempBookPtr, "%s\n%s\n%s\n%s\n%d\n%d\n\n", book.ISBN, book.title, book.author, book.year, book.totalCopies, book.copiesAvailable);
             }
         }
-
     }
 
     fclose(tempBookPtr);
@@ -504,10 +529,11 @@ void returnFunc() {
 
         r.penalty = 1 * difference_in_days;
     }
+    // append into Return.txt
     fprintf(returnPtr, "\n\n%s\n%s\n%s\n%s\n%.2f", inputID, inputISBN, borrow.toBeReturnDate, r.returnDate, r.penalty);
 
-    fclose(returnPtr);
-    fclose(borrowPtr);
+    fclose(returnPtr); // close Return.txt
+    fclose(borrowPtr); // close Borrow.txt
 
     printf("Book successfully returned!\n");
 
@@ -527,9 +553,9 @@ void displayList() { // require FILE knowledge
         printf("File could not be opened.\n");
     }
 
-    Book books[MAX_BOOKS];
+    Book books[100];
     int bookCount = 0;
-
+    // user interface
     printf("+====================================+\n");
     printf("\t>>> Book List <<<\n");
     printf("+====================================+\n");
@@ -559,6 +585,7 @@ void displayList() { // require FILE knowledge
     char key = getchar();
 }
 
+// function to calculate penalty for late return
 void penalty() { 
     char current_date[11];
     Borrow borrow;
@@ -619,43 +646,14 @@ void penalty() {
                 double difference_in_days = difference / (24 * 60 * 60);
 
                 penalty = 1 * difference_in_days;
-
+                // append into Penalty.txt
                 fprintf(penPtr, "%s\n%s\n%.2f\n\n", borrow.ID, borrow.ISBN, penalty);
                 rows++;
             }
         }
     }
-    // while (fscanf(borrowPtr, "%s\n%s\n%s\n%s\n", borrow.ID, borrow.ISBN, borrow.currentDate, borrow.toBeReturnDate) == 4) {
-    //     //convert struct tm to time_t (seconds since epoch)
-    //     time_t time1 = mktime(&tm);
-    //     struct tm tm_borrow = {0};
-    //     sscanf(borrow.toBeReturnDate, "%d-%d-%d", &tm_borrow.tm_year, &tm_borrow.tm_mon, &tm_borrow.tm_mday);
-    //     tm_borrow.tm_year -= 1900;
-    //     tm_borrow.tm_mon--;
-    //     time_t time2 = mktime(&tm_borrow);
-
-    //     // check whether book already returned, if not returned, calculate penalty
-    //     while (fscanf(returnPtr, "%s\n%s\n%s\n%s\n%f\n", r.ID, r.ISBN, r.toBeReturnDate, r.returnDate, &r.penalty) == 5) {
-    //         if (strcmp(borrow.ID, r.ID) != 0 && strcmp(borrow.ISBN, r.ISBN) != 0) {
-    //             // if current_date > borrow.toBeReturnDate
-    //             if (time2 < time1) {
-    //                 // calculate difference in seconds
-    //                 double difference = difftime(time1, time2);
-
-    //                 // convert seconds to days
-    //                 double difference_in_days = difference / (24 * 60 * 60);
-
-    //                 penalty = 1 * difference_in_days;
-
-    //                 fprintf(penPtr, "%s\n%s\n%.2f\n\n", borrow.ID, borrow.ISBN, penalty);
-    //                 rows++;
-    //             }
-    //         }
-    //     }
-    // }
-
-    rewind(penPtr);
-
+    rewind(penPtr); // reset the pointer in Penalty.txt
+    // user interface
     printf("+====================================+\n");
     printf("\t>>> Penalty Page <<<          \n");
     printf("+====================================+\n");
@@ -682,9 +680,10 @@ void penalty() {
     char key = getchar();
 }
 
+// function to display librarian menu
 void librarianMenu() {
     int num;
-    
+    // user interface
     printf("+====================================+\n");
     printf("\t>>> Librarian Menu <<<                \n");
     printf("+====================================+\n");
@@ -741,42 +740,55 @@ void librarianMenu() {
         end();
         break;
     default:
-        printf("Invalid input.");
+        printf("Invalid input.\n");
         librarianMenu();
         break;
     }
 }
 
-void addBooks() { // require FILE knowledge
+// function to add book
+void addBooks() { 
     FILE *bookPtr = NULL;       // sPtr = Student.txt file pointer
 
     // fopen opens file; exits program if file cannot be opened
-    if ((bookPtr = fopen("Books.txt", "a+")) == NULL) {
+    if ((bookPtr = fopen("Books.txt", "a")) == NULL) {
         puts("File could not be opened.");
     }
     else {
         Book book;
+        // user interface
+        printf("+====================================+\n");
+        printf("\t>>> Add Book <<<\n");
+        printf("+====================================+\n");
 
         printf("Enter ISBN: ");
-        scanf("%s", book.ISBN);
+        getchar();
+        scanf("%13s", book.ISBN);
 
         printf("Title: ");
-        scanf("%s", book.title);
+        getchar();
+        scanf("%199[^\n]", book.title);
 
         printf("Author: ");
-        scanf("%s", book.author);
+        getchar();
+        scanf("%49[^\n]", book.author);
 
         printf("Year of Publication: ");
-        scanf("%s", book.year);
+        getchar();
+        scanf("%4s", book.year);
 
         printf("Total Copies: ");
+        getchar();
         scanf("%d", &book.totalCopies);
 
         printf("Copies Available: ");
-        scanf("%d", &book.totalCopies);
+        getchar();
+        scanf("%d", &book.copiesAvailable);
 
-        fprintf(bookPtr, "\n\n%s\n%s%s\n%s\n\n%d\n%d", book.ISBN, book.title, book.author, book.year, book.totalCopies, book.copiesAvailable);
 
+        // append details into Books.txt
+        fprintf(bookPtr, "\n\n%s\n%s\n%s\n%s\n%d\n%d", book.ISBN, book.title, book.author, book.year, book.totalCopies, book.copiesAvailable);
+        // fflush(bookPtr);
         fclose(bookPtr);
     }
     librarianMenu();
@@ -815,7 +827,7 @@ void borrow_return_details() {
     printf("----------------------------------------------------------------------\n");
     printf("| %-20s | %-20s | %-20s |\n", "ISBN", "Student ID", "Date of Borrow");
     printf("|----------------------|----------------------|----------------------|\n");
-
+    // display details in table form
     while (fscanf(borrowPtr, "%s\n%s\n%s\n%s\n", borrow.ID, borrow.ISBN, borrow.currentDate, borrow.toBeReturnDate) == 4) {
             printf("| %-20s | %-20s | %-20s |\n", borrow.ISBN, borrow.ID, borrow.currentDate);
     }    
@@ -843,8 +855,13 @@ void borrow_return_details() {
     }    
 
     puts("----------------------------------------------------------------------\n");
+    getchar(); // clear input buffer
+    printf("Enter any key to continue: ");
+    char key = getchar();
+    puts("");
 }
 
+// function to generate monthly report
 void monthlyReport() {
     char line[100];
     int num_borrow = 0;
@@ -909,10 +926,12 @@ void monthlyReport() {
     char key = getchar();
 }
 
+// function to end the program
 void end() {
     printf("+====================================+\n");
     printf("\t>>> Session Ended <<<                \n");
     printf("\t      Thank you                 \n");
     printf("+====================================+\n");
+    exit(1);
 }
 
